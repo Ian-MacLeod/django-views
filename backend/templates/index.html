@@ -1,0 +1,121 @@
+<div>Hello{% if request.user.username %}, {{request.user.username}}{% endif %}</div>
+
+<h2>Response</h2>
+<p>Status: <span id="response_status"></span></p>
+<p>Content:</p>
+<pre id="response_json"></pre>
+
+<br/>
+<br/>
+
+<h2>Items</h2>
+<form data-method="post" data-path="/api/items/">
+    {% csrf_token %}
+    <h3>Create</h3>
+    <p>
+        <label for="item_name">Item name</label>
+        <input type="text" name="name" id="item_name"/>
+    </p>
+    <p>
+        <label for="item_price">Item price</label>
+        <input type="text" name="price" id="item_price" />
+    </p>
+    <input type="submit">
+</form>
+
+<form data-method="get" data-path="/api/items/">
+    <h3>List</h3>
+    <input type="submit">
+</form>
+
+<br/>
+<br/>
+
+<h2>Carts</h2>
+
+<form data-method="post" data-path="/api/carts/">
+    {% csrf_token %}
+    <h3>Create</h3>
+    <input type="submit">
+</form>
+
+
+<form data-method="get" data-path="/api/carts/">
+    <h3>List</h3>
+    <input type="submit">
+</form>
+
+<form data-method="delete" data-path="/api/cart/">
+    {% csrf_token %}
+    <h3>Delete</h3>
+    <p>
+        <label for="cart_delete_cart_id">Cart id</label>
+        <input type="text" name="id" id="cart_delete_cart_id"/>
+    </p>
+    <input type="submit">
+</form>
+
+<form data-method="post" data-path="/api/cart/item/">
+    {% csrf_token %}
+    <h3>Add item</h3>
+    <p>
+        <label for="add_item_item_id">Item id</label>
+        <input type="text" name="item_id" id="add_item_item_id"/>
+    </p>
+    <p>
+        <label for="add_item_cart_id">Cart id</label>
+        <input type="text" name="cart_id" id="add_item_cart_id"/>
+    </p>
+    <p>
+        <label for="add_item_count">Count</label>
+        <input type="text" name="count" id="add_item_count"/>
+    </p>
+    <input type="submit">
+</form>
+
+<form data-method="delete" data-path="/api/cart/item/">
+    {% csrf_token %}
+    <h3>Remove item</h3>
+    <p>
+        <label for="remove_item_item_id">Item id</label>
+        <input type="text" name="item_id" id="remove_item_item_id"/>
+    </p>
+    <p>
+        <label for="remove_item_cart_id">Cart id</label>
+        <input type="text" name="cart_id" id="remove_item_cart_id"/>
+    </p>
+    <p>
+        <label for="remove_item_count">Count</label>
+        <input type="text" name="count" id="remove_item_count"/>
+    </p>
+    <input type="submit">
+</form>
+
+<script>
+    function recordResponse(response) {
+        document.getElementById('response_status').innerText = response.status;
+        response.json().then(function(json) {
+            document.getElementById('response_json').innerText = JSON.stringify(json);
+        })
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+        let { path, method } = form.dataset;
+        const config = {method, headers: {'accept': 'application/json'}}
+        if (method === 'get') {
+            path += '?' + new URLSearchParams(data);
+        } else {
+            config.body = data;
+        }
+        fetch(path, config)
+            .then(recordResponse)
+            .catch(recordResponse);
+    }
+
+    for (const el of document.getElementsByTagName('form')) {
+        el.addEventListener('submit', handleSubmit);
+    }
+</script>
